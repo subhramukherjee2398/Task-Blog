@@ -7,10 +7,10 @@ const {
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 
-// Public route
+
 router.get('/:id', getUserById);
 
-// Protected routes
+
 router.get('/', protect, getAllUsers);
 router.delete('/:id', protect, deleteUser);
 

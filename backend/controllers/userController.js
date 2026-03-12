@@ -3,34 +3,34 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { JWT_SECRET } = require('../middleware/auth');
 
-// Async error handler wrapper
+
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Generate JWT token
+
 const generateToken = (userId) => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 };
 
-// Set token as HTTP-only cookie
+
 const setTokenCookie = (res, token) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000, 
     path: '/'
   });
 };
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+
+
+
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Validation
+  
   if (!name || !email || !password) {
     return res.status(400).json({
       success: false,
@@ -45,7 +45,7 @@ const register = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if user already exists
+  
   const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) {
     return res.status(400).json({
@@ -54,11 +54,11 @@ const register = asyncHandler(async (req, res) => {
     });
   }
 
-  // Hash password
+  
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  // Create user
+  
   const user = new User({
     name,
     email: email.toLowerCase(),
@@ -67,10 +67,10 @@ const register = asyncHandler(async (req, res) => {
 
   await user.save();
 
-  // Generate token
+  
   const token = generateToken(user._id);
 
-  // Set cookie
+  
   setTokenCookie(res, token);
 
   res.status(201).json({
@@ -86,13 +86,13 @@ const register = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+
+
+
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Validation
+  
   if (!email || !password) {
     return res.status(400).json({
       success: false,
@@ -100,7 +100,7 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
-  // Find user
+  
   const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) {
     return res.status(401).json({
@@ -109,7 +109,7 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check password
+  
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     return res.status(401).json({
@@ -118,10 +118,10 @@ const login = asyncHandler(async (req, res) => {
     });
   }
 
-  // Generate token
+  
   const token = generateToken(user._id);
 
-  // Set cookie
+  
   setTokenCookie(res, token);
 
   res.json({
@@ -137,9 +137,9 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Logout user
-// @route   POST /api/auth/logout
-// @access  Private
+
+
+
 const logout = (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
@@ -153,9 +153,9 @@ const logout = (req, res) => {
   });
 };
 
-// @desc    Get current user
-// @route   GET /api/auth/me
-// @access  Private
+
+
+
 const getMe = asyncHandler(async (req, res) => {
   res.json({
     success: true,
@@ -169,9 +169,9 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
+
+
+
 const updateProfile = asyncHandler(async (req, res) => {
   const { name, email } = req.body;
 
@@ -195,9 +195,9 @@ const updateProfile = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update user password
-// @route   PUT /api/auth/password
-// @access  Private
+
+
+
 const updatePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -217,7 +217,7 @@ const updatePassword = asyncHandler(async (req, res) => {
 
   const user = await User.findById(req.user._id);
 
-  // Check current password
+  
   const isMatch = await bcrypt.compare(currentPassword, user.password);
   if (!isMatch) {
     return res.status(401).json({
@@ -226,7 +226,7 @@ const updatePassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // Update password
+  
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   await user.save();
@@ -237,9 +237,9 @@ const updatePassword = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get user by ID
-// @route   GET /api/users/:id
-// @access  Public
+
+
+
 const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select('-password');
   
@@ -256,9 +256,9 @@ const getUserById = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Private
+
+
+
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find().select('-password').sort({ createdAt: -1 });
 
@@ -269,9 +269,9 @@ const getAllUsers = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete user
-// @route   DELETE /api/users/:id
-// @access  Private
+
+
+
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
@@ -282,7 +282,7 @@ const deleteUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Prevent user from deleting themselves
+  
   if (user._id.toString() === req.user._id.toString()) {
     return res.status(400).json({
       success: false,

@@ -1,30 +1,30 @@
 const Post = require('../models/Post');
 
-// Async error handler wrapper
+
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// @desc    Get all posts with pagination and filters
-// @route   GET /api/posts
-// @access  Public
+
+
+
 const getPosts = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 10;
   const skip = (page - 1) * limit;
 
-  // Build query
+  
   let query = { status: 'published' };
 
-  // Filter by author
+  
   if (req.query.author) {
     query.author = req.query.author;
   }
 
-  // Get total count for pagination
+  
   const total = await Post.countDocuments(query);
 
-  // Execute query with pagination
+  
   const posts = await Post.find(query)
     .populate('author', 'name email')
     .sort({ createdAt: -1 })
@@ -41,13 +41,13 @@ const getPosts = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get single post by ID or slug
-// @route   GET /api/posts/:idOrSlug
-// @access  Public
+
+
+
 const getPost = asyncHandler(async (req, res) => {
   const { idOrSlug } = req.params;
   
-  // Try to find by ID first, then by slug
+  
   let post;
   if (idOrSlug.match(/^[0-9a-fA-F]{24}$/)) {
     post = await Post.findById(idOrSlug).populate('author', 'name email');
@@ -62,7 +62,7 @@ const getPost = asyncHandler(async (req, res) => {
     });
   }
 
-  // Increment view count
+  
   post.views += 1;
   await post.save();
 
@@ -72,13 +72,13 @@ const getPost = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Create new post
-// @route   POST /api/posts
-// @access  Private
+
+
+
 const createPost = asyncHandler(async (req, res) => {
   const { title, slug, content, excerpt, status } = req.body;
 
-  // Create post with user info
+  
   const post = new Post({
     title,
     slug,
@@ -91,7 +91,7 @@ const createPost = asyncHandler(async (req, res) => {
 
   await post.save();
 
-  // Populate author info
+  
   const populatedPost = await Post.findById(post._id)
     .populate('author', 'name email');
 
@@ -102,9 +102,9 @@ const createPost = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update post
-// @route   PUT /api/posts/:id
-// @access  Private (Author only)
+
+
+
 const updatePost = asyncHandler(async (req, res) => {
   let post = await Post.findById(req.params.id);
 
@@ -115,7 +115,7 @@ const updatePost = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if user is the author
+  
   if (post.author.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       success: false,
@@ -138,9 +138,9 @@ const updatePost = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete post
-// @route   DELETE /api/posts/:id
-// @access  Private (Author only)
+
+
+
 const deletePost = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id);
 
@@ -151,7 +151,7 @@ const deletePost = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if user is the author
+  
   if (post.author.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       success: false,
@@ -168,9 +168,9 @@ const deletePost = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get user's posts
-// @route   GET /api/posts/user/me
-// @access  Private
+
+
+
 const getMyPosts = asyncHandler(async (req, res) => {
   const posts = await Post.find({ author: req.user._id })
     .sort({ createdAt: -1 })

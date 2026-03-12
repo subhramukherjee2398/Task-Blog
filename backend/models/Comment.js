@@ -44,44 +44,44 @@ const commentSchema = new mongoose.Schema(
   }
 );
 
-/////////////////////////////////////////////////////
-// INDEXES
-/////////////////////////////////////////////////////
 
-// Index for efficient querying by post
+
+
+
+
 commentSchema.index({ post: 1, createdAt: -1 });
 
-// Index for querying user's comments
+
 commentSchema.index({ user: 1, createdAt: -1 });
 
-/////////////////////////////////////////////////////
-// STATIC METHODS
-/////////////////////////////////////////////////////
 
-// Find by post
+
+
+
+
 commentSchema.statics.findByPost = function (postId) {
   return this.find({ post: postId }).populate("user", "name email");
 };
 
-/////////////////////////////////////////////////////
-// INSTANCE METHODS
-/////////////////////////////////////////////////////
 
-// Update content
+
+
+
+
 commentSchema.methods.updateContent = async function (content) {
   this.content = content;
   return this.save();
 };
 
-/////////////////////////////////////////////////////
-// VIRTUALS
-/////////////////////////////////////////////////////
+
+
+
 
 commentSchema.virtual("url").get(function () {
   return `/comments/${this._id}`;
 });
 
-/////////////////////////////////////////////////////
+
 
 const Comment = mongoose.model("Comment", commentSchema);
 

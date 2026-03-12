@@ -1,14 +1,14 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 
-// Async error handler wrapper
+
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// @desc    Get all comments for a post
-// @route   GET /api/comments/post/:postId
-// @access  Public
+
+
+
 const getCommentsByPost = asyncHandler(async (req, res) => {
   const comments = await Comment.find({ post: req.params.postId })
     .sort({ createdAt: -1 })
@@ -21,9 +21,9 @@ const getCommentsByPost = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Create new comment
-// @route   POST /api/comments
-// @access  Private
+
+
+
 const createComment = asyncHandler(async (req, res) => {
   const { content, postId } = req.body;
 
@@ -34,7 +34,7 @@ const createComment = asyncHandler(async (req, res) => {
     });
   }
 
-  // Verify post exists
+  
   const post = await Post.findById(postId);
   if (!post) {
     return res.status(404).json({
@@ -53,7 +53,7 @@ const createComment = asyncHandler(async (req, res) => {
 
   await comment.save();
 
-  // Populate user info
+  
   const populatedComment = await Comment.findById(comment._id)
     .populate('user', 'name email');
 
@@ -64,9 +64,9 @@ const createComment = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Update comment
-// @route   PUT /api/comments/:id
-// @access  Private (Comment author only)
+
+
+
 const updateComment = asyncHandler(async (req, res) => {
   let comment = await Comment.findById(req.params.id);
 
@@ -77,7 +77,7 @@ const updateComment = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if user is the comment author
+  
   if (comment.user.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       success: false,
@@ -100,9 +100,9 @@ const updateComment = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Delete comment
-// @route   DELETE /api/comments/:id
-// @access  Private (Comment author or post author)
+
+
+
 const deleteComment = asyncHandler(async (req, res) => {
   const comment = await Comment.findById(req.params.id);
 
@@ -113,7 +113,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if user is the comment author or post author
+  
   const post = await Post.findById(comment.post);
   const isCommentAuthor = comment.user.toString() === req.user._id.toString();
   const isPostAuthor = post && post.author.toString() === req.user._id.toString();
@@ -134,9 +134,9 @@ const deleteComment = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get user's comments
-// @route   GET /api/comments/my-comments
-// @access  Private
+
+
+
 const getMyComments = asyncHandler(async (req, res) => {
   const comments = await Comment.find({ user: req.user._id })
     .sort({ createdAt: -1 })
